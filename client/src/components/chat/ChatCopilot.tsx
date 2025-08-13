@@ -43,7 +43,7 @@ export function ChatCopilot() {
   return (
     <div
       className={cn(
-        "fixed bottom-6 right-6 w-80 bg-surface rounded-lg shadow-2xl border border-slate-600 animate-fade-in",
+        "fixed bottom-6 left-6 w-80 bg-surface rounded-lg shadow-2xl border border-slate-600 animate-fade-in",
         isMinimized && "h-auto"
       )}
     >
