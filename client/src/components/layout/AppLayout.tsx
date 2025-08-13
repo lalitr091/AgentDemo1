@@ -16,7 +16,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <Header />
       <div className="flex h-[calc(100vh-80px)]">
         <Sidebar />
-        <main className="flex-1 overflow-hidden">
+        <main className="flex-1 overflow-y-auto">
           {children}
         </main>
       </div>
