@@ -1,7 +1,7 @@
 import { createServer, Model, Factory, RestSerializer } from 'miragejs';
 import { Ticket, JiraIssue, EvidencePack, SpareInventory, User } from '@/types';
 
-export function makeServer(environment = 'development') {
+export function makeServer(environment = 'production') {
   return createServer({
     environment,
     serializers: {
