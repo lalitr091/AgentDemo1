@@ -3,17 +3,36 @@ import { useLocation } from 'wouter';
 import { useAuthStore } from '@/stores/auth';
 
 interface ProtectedRouteProps {
-  children: ReactNode;
+  children?: ReactNode;
   allowedRoles?: string[];
+  redirectToRoleDashboard?: boolean;
 }
 
-export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
+export function ProtectedRoute({ children, allowedRoles, redirectToRoleDashboard }: ProtectedRouteProps) {
   const { user } = useAuthStore();
   const [, setLocation] = useLocation();
 
   useEffect(() => {
     if (!user) {
       setLocation('/auth/login');
+      return;
+    }
+
+    // If this is a role dashboard redirect request, redirect immediately
+    if (redirectToRoleDashboard) {
+      switch (user.role) {
+        case 'engineer':
+          setLocation('/engineer/work-queue');
+          break;
+        case 'head':
+          setLocation('/head/operations');
+          break;
+        case 'exec':
+          setLocation('/exec/roi');
+          break;
+        default:
+          setLocation('/engineer/work-queue');
+      }
       return;
     }
 
@@ -33,9 +52,14 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
           setLocation('/');
       }
     }
-  }, [user, allowedRoles, setLocation]);
+  }, [user, allowedRoles, redirectToRoleDashboard, setLocation]);
 
   if (!user) {
+    return null;
+  }
+
+  // If redirecting to role dashboard, don't render children
+  if (redirectToRoleDashboard) {
     return null;
   }
 
