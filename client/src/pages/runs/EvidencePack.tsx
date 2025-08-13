@@ -21,22 +21,8 @@ interface EvidencePackProps {
 }
 
 export default function EvidencePack({ runId }: EvidencePackProps) {
-  const { data: evidencePack, isLoading } = useQuery({
-    queryKey: ['/api/evidence-packs', runId === 'latest' ? 'ZD-14231-001' : runId],
-  });
-
-  if (isLoading) {
-    return (
-      <AppLayout>
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <Activity className="w-8 h-8 animate-spin mx-auto mb-4 text-slate-400" />
-            <p className="text-slate-400">Loading Evidence Pack...</p>
-          </div>
-        </div>
-      </AppLayout>
-    );
-  }
+  // Using mock data directly since this is a frontend-only demo
+  const isLoading = false;
 
   const mockEvidencePack = {
     runId: 'ZD-14231-001',
@@ -111,7 +97,7 @@ export default function EvidencePack({ runId }: EvidencePackProps) {
     },
   };
 
-  const pack = evidencePack || mockEvidencePack;
+  const pack = mockEvidencePack;
 
   const getAgentIcon = (agent: string) => {
     switch (agent) {

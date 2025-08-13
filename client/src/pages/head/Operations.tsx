@@ -214,17 +214,17 @@ export default function Operations() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
+              <div className="text-center p-4 bg-slate-800 rounded-lg">
                 <div className="text-3xl font-bold text-green-400 mb-1">96.8%</div>
                 <div className="text-sm text-slate-400">P1 SLA Compliance</div>
                 <div className="text-xs text-slate-500 mt-1">Target: 95%</div>
               </div>
-              <div className="text-center">
+              <div className="text-center p-4 bg-slate-800 rounded-lg">
                 <div className="text-3xl font-bold text-yellow-400 mb-1">89.2%</div>
                 <div className="text-sm text-slate-400">P2 SLA Compliance</div>
                 <div className="text-xs text-slate-500 mt-1">Target: 90%</div>
               </div>
-              <div className="text-center">
+              <div className="text-center p-4 bg-slate-800 rounded-lg">
                 <div className="text-3xl font-bold text-green-400 mb-1">98.5%</div>
                 <div className="text-sm text-slate-400">P3/P4 SLA Compliance</div>
                 <div className="text-xs text-slate-500 mt-1">Target: 95%</div>

@@ -20,6 +20,7 @@ import AgentMesh from "@/pages/mesh/AgentMesh";
 import EvidencePack from "@/pages/runs/EvidencePack";
 import Policies from "@/pages/settings/Policies";
 import Agentfile from "@/pages/Agentfile";
+import AgentDetail from "@/pages/agents/AgentDetail";
 import NotFound from "@/pages/not-found";
 
 
@@ -98,6 +99,14 @@ function Router() {
         <ProtectedRoute>
           <Agentfile />
         </ProtectedRoute>
+      </Route>
+
+      <Route path="/agents/:agentName">
+        {(params) => (
+          <ProtectedRoute>
+            <AgentDetail agentName={params.agentName} />
+          </ProtectedRoute>
+        )}
       </Route>
 
       {/* Fallback to 404 */}

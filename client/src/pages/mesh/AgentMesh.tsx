@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocation } from 'wouter';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -111,6 +112,7 @@ const mockTools = [
 export default function AgentMesh() {
   const [isRunning, setIsRunning] = useState(true);
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
+  const [, setLocation] = useLocation();
 
   const getAgentIcon = (agent: string) => {
     switch (agent) {
@@ -201,6 +203,75 @@ export default function AgentMesh() {
           </div>
         </div>
 
+        {/* Agent Overview Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <Card 
+            className="bg-surface border-slate-700 cursor-pointer hover:bg-slate-800 transition-colors"
+            onClick={() => setLocation('/agents/triageagent')}
+          >
+            <CardContent className="pt-6">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                  <Brain className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-50">TriageAgent</h3>
+                  <p className="text-sm text-slate-400">Classifier • v2.1.3</p>
+                </div>
+              </div>
+              <p className="text-sm text-slate-300 mb-3">Classifies tickets and routes to appropriate track</p>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">1,247 invocations</span>
+                <span className="text-green-400">94.2% success</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="bg-surface border-slate-700 cursor-pointer hover:bg-slate-800 transition-colors"
+            onClick={() => setLocation('/agents/loganalyzeragent')}
+          >
+            <CardContent className="pt-6">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
+                  <FileSearch className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-50">LogAnalyzerAgent</h3>
+                  <p className="text-sm text-slate-400">Analyzer • v1.8.2</p>
+                </div>
+              </div>
+              <p className="text-sm text-slate-300 mb-3">Analyzes uploaded logs and extracts actionable insights</p>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">342 invocations</span>
+                <span className="text-green-400">89.1% success</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="bg-surface border-slate-700 cursor-pointer hover:bg-slate-800 transition-colors"
+            onClick={() => setLocation('/agents/spareagent')}
+          >
+            <CardContent className="pt-6">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                  <Package className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-50">SpareAgent</h3>
+                  <p className="text-sm text-slate-400">Inventory • v1.4.1</p>
+                </div>
+              </div>
+              <p className="text-sm text-slate-300 mb-3">Manages spare parts inventory and reservations</p>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">156 invocations</span>
+                <span className="text-green-400">96.4% success</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         <Tabs defaultValue="conversation" className="space-y-6">
           <TabsList className="bg-surface border border-slate-700">
             <TabsTrigger value="conversation" className="data-[state=active]:bg-slate-700">
@@ -246,7 +317,12 @@ export default function AgentMesh() {
                           <div className="bg-slate-800 rounded-lg p-3">
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center space-x-2">
-                                <span className="text-sm font-medium text-slate-200">{item.agent}</span>
+                                <span 
+                                  className="text-sm font-medium text-slate-200 hover:text-primary cursor-pointer" 
+                                  onClick={() => setLocation(`/agents/${item.agent.toLowerCase()}`)}
+                                >
+                                  {item.agent}
+                                </span>
                                 <Badge variant="outline" className="text-xs">
                                   {item.type.replace('_', ' ')}
                                 </Badge>
@@ -293,7 +369,11 @@ export default function AgentMesh() {
                       <div>
                         <div className="flex items-center space-x-3 mb-1">
                           <span className="font-medium text-slate-200">{tool.name}()</span>
-                          <Badge variant="outline" className="text-xs">
+                          <Badge 
+                            variant="outline" 
+                            className="text-xs cursor-pointer hover:bg-slate-700"
+                            onClick={() => setLocation(`/agents/${tool.agent.toLowerCase()}`)}
+                          >
                             {tool.agent}
                           </Badge>
                         </div>

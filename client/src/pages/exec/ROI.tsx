@@ -136,7 +136,7 @@ export default function ROI() {
               </CardTitle>
               <CardDescription>Adjust parameters to model financial impact</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 max-h-96 overflow-y-auto">
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm font-medium text-slate-300">Automation Level</label>
