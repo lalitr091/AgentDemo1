@@ -1,0 +1,271 @@
+Build a production-quality, frontend-only web app called “Initializ Agent Mesh — First-Action Worker (GreyOrange)” using React + Vite + TypeScript + Tailwind.
+Single tenant: GreyOrange. Showcase three collaborating agents that handle a Zendesk→Jira flow with governance, evidence, and replay. No backend; use MirageJS (deterministic seed) + localStorage persistence.
+
+Tech & polish
+React 18, Vite, TypeScript, Tailwind, Zustand (state), React Router, Recharts (charts), Framer Motion (micro-animations), lucide-react (icons).
+
+MirageJS for models/fixtures/routes; deterministic seed; mock “tools.”
+
+A11y + dark mode; keyboard: / search, ⌘K command palette, ? chat, G Jira form, E execute.
+
+Initializ framing (brand & governance)
+Header badge: Initializ Agent Mesh with GO tag.
+
+Every automated run emits a tamper-evident Evidence Pack (JSON download + fake SHA-256, “Signed by Initializ Demo CA”) and an OpenTelemetry-style timeline (agent messages, tool calls, inputs/outputs, policy decisions).
+
+Agentfile viewer (read-only YAML) that defines the three agents + policies; “copy to clipboard.”
+
+Agents (exactly three)
+TriageAgent – classifies ticket (bug/feature/incident), routing: software vs hardware, links similar past tickets, creates Jira, updates Zendesk.
+
+LogAnalyzerAgent – when a hardware Jira needs more info: reads the developer’s uploaded log, parses errors, extracts signals, writes Findings in Jira, assigns back to Dev.
+
+SpareAgent – if findings indicate hardware replacement: checks spares inventory, reserves part, posts ETA & handoff notes back to Jira + Zendesk.
+
+Agents “talk” through a Mesh Console that shows their messages, tool invocations, and handoffs. All tool calls are mocked.
+
+Auth & RBAC (mock)
+Login screen with quick buttons:
+
+Support Engineer — engineer@greyorange.com / demo123
+
+Support Head — head@greyorange.com / demo123
+
+C-Level — exec@greyorange.com / demo123
+
+Route guards:
+
+Engineer: full Work Queue, read Evidence Packs; cannot edit policies.
+
+Head: Operations + Approvals + Policies (except Strict Mode).
+
+Exec: ROI + can toggle Strict Mode; read-only elsewhere.
+
+Routes
+/auth/login
+
+/ Persona chooser + “Start Guided Tour”
+
+/engineer/work-queue
+
+/head/operations
+
+/exec/roi
+
+/mesh (Agent Mesh Console)
+
+/runs/:runId (Evidence Pack & Replay)
+
+/settings/policies
+
+/agentfile (read-only YAML)
+
+Global Chat Copilot (everywhere)
+Dockable chat knows role, route, selected ticket, and can act via tools. Examples it should understand:
+
+“open ZD-14231 and create a Jira draft” → opens form.
+
+“why did the agent choose hardware?” → displays Decision Rationale from Evidence Pack (features used, similar tickets, confidence).
+
+“approve the pending P1 run” (Head) → approves.
+
+“turn on Strict Mode” (Exec) → toggles.
+
+Tools (frontend functions rendered as chat tool cards)
+filterTickets, openTicket, createJiraDraft, executeFirstAction, requestApproval, approveRun, analyzeLogNow, reserveSpare, computeROI, exportAuditCSV, explain(policy|metric|decision).
+
+Data model (MirageJS) — GreyOrange only
+Tickets (Zendesk)
+scss
+Copy
+Edit
+id, subject, body, site(ATL-1|DFW-2|LHR-1), customerTier(Gold|Standard),
+channel(email|web), language, createdAt, status(new|open|pending|solved),
+assignee, priority(P1..P4), sla{dueBy, breachRisk},
+ai{ summary, intent(bug|feature|incident|question), confidence, sentiment(-1..1), similarTickets[] },
+routing{ track(software|hardware), rationale, confidence },
+suggestedAction(reply|route|knowledge|create_jira),
+policyFlags(contains_pii, external_impact, p1_requires_approval),
+linkedJira?{ key, project:'GO' }, timeline[]
+Jira Issues (GO only)
+scss
+Copy
+Edit
+key(GO-1012+), project:'GO', summary, description, priority, status,
+assignee, labels[], linkedTicketId, createdAt, attachments[{name,size,type}],
+findings?{ rootCause, signals[], errorBursts[], recommendedAction, confidence },
+spares?{ partNo, location, qtyReserved, eta }, history[]
+Evidence Pack (per automation run)
+css
+Copy
+Edit
+{ runId, ticketId, startedAt, finishedAt,
+  steps:[{idx, agent:'TriageAgent'|'LogAnalyzerAgent'|'SpareAgent',
+          type:'MSG'|'TOOL'|'DECISION',
+          input, output, latencyMs, tokensEst }],
+  approvals:[{actor, role, channel:'Slack', decision, at}],
+  policies:{ strictMode, p1NeedsApproval, piiRedaction },
+  rationale:{ decisionTree, featuresUsed, similarTicketRefs },
+  attestation:{ sha256:'fake-hash', signedBy:'Initializ Demo CA', version:'v1' }
+}
+Spares Inventory
+scss
+Copy
+Edit
+{ partNo, name, location(ATL-DC|DFW-DC|LHR-DC), qtyAvailable, leadDays, vendor }
+Audit Log
+{ at, actor, role, action, details } (CSV export).
+
+Seed scenario (deterministic)
+Create 3 golden-path tickets + supporting data (all GreyOrange):
+
+ZD-14231 (P1 incident, ATL-1)
+
+Subject: “Totes misrouted after firmware v3.18”
+
+AI: intent=incident (0.91), sentiment −0.7
+
+TriageAgent routes hardware, links 3 similar tickets, creates Jira GO-1012, updates Zendesk.
+
+Head approval required (P1). After approval, Dev is assigned.
+
+Dev uploads attachment conveyor-ctrl_2025-08-11.log (~18MB, mocked).
+
+LogAnalyzerAgent parses: finds CRC mismatch spikes, error bursts at 02:14, 02:37, recommends Motor driver board v2 replacement; posts structured Findings to GO-1012 and assigns back to Dev.
+
+SpareAgent reserves MD-BRD-V2 from DFW-DC, ETA 2 days, writes reservation + ETA into Jira & Zendesk.
+
+ZD-14248 (P1 bug, DFW-2)
+
+AI: intent=bug (0.88) → hardware; Jira GO-1013; policy approval needed.
+
+Dev uploads agv-dock_2025-08-10.log.
+
+LogAnalyzerAgent detects battery gauge sensor drift, suggests SENSOR-BATT-A1; SpareAgent reserves from ATL-DC.
+
+ZD-14345 (P3 question, DFW-2)
+
+AI: intent=question → software track; suggests knowledge response; no Jira.
+
+Engineer uses chat: “draft a reply referencing audit export docs,” sends.
+
+Also seed a few baseline Jira issues (GO-1014..GO-1017) and a small spares inventory.
+
+Mock “tools” (implement as Mirage endpoints + frontend helpers)
+classifyTicket(body, history) → { track: 'hardware'|'software', confidence, rationale, similarTickets[] }
+
+createJiraFromTicket(ticket) → new GO-#### with mapped fields + labels first-action,ai-suggested,GO
+
+updateZendesk(ticketId, patch)
+
+requestApproval(runId) / approveRun(runId)
+
+uploadAttachment(issueKey, file) → push into attachments[]
+
+analyzeLog(issueKey) → deterministic findings for seeded files (parse mock lines; produce error bursts, signals)
+
+recommendSpare(findings) → { partNo, location, eta }
+
+reserveSpare(partNo, location) → decrement inventory + attach reservation to issue
+
+computeMetrics() → MTTA/MTTR/ROT/backlog/acceptance rates
+
+exportAudit(range) → CSV blob
+
+Views
+1) Support Engineer — Work Queue (/engineer/work-queue)
+Queue filters (site, priority, intent, breach); badges show intent & track (Hardware/Software).
+
+Ticket detail center; “Why Hardware?” chip opens a Decision Rationale panel (features used, past similar tickets with diffs).
+
+Action panel:
+
+Create Jira (prefilled) (if not created)
+
+Upload Log (visible when Dev assigned on hardware track)
+
+Execute Suggested Action (policy-aware)
+
+After tools run, View Evidence Pack.
+
+Chat suggestions: “open ZD-14231 & create Jira”, “why hardware?”, “analyze this log now”.
+
+2) Support Head — Operations (/head/operations)
+Team Board (by assignee), aging.
+
+SLA Panel (MTTA/MTTR/ROT trends), breach heatmap.
+
+Automation Quality: suggestion acceptance %, rollback rate, Jira handoff quality.
+
+Approvals Inbox (approve/reject P1/PII/external impact runs).
+
+Audit Log (CSV export).
+
+Policies quick edit (except Strict Mode).
+
+3) C-Level — ROI (/exec/roi)
+Before/After cards (e.g., MTTA ↓35%, MTTR ↓28%, backlog ↓22%).
+
+ROI Calculator sliders → savings, payback, ARR impact.
+
+Governance & Trust: counts of approvals, Evidence Packs, audit exports.
+
+4) Agent Mesh Console (/mesh)
+Tabs:
+
+Conversation (agent messages like a Slack thread: TriageAgent → LogAnalyzerAgent → SpareAgent with tool result cards)
+
+Tools (side panel shows each call’s inputs/outputs)
+
+Trace (timeline with spans: “classify”, “createJira”, “analyzeLog”, “reserveSpare”)
+
+Artifacts (attachments, findings JSON, reservation note)
+
+Graph (simple node-edge diagram of this run)
+
+5) Evidence Pack & Replay (/runs/:runId)
+Timeline (LLM calls, decisions, approvals, tool calls).
+
+Rationale section: features, similar tickets, thresholds, policies hit.
+
+Download JSON; show fake SHA-256 and signer.
+
+6) Settings — Policies (/settings/policies)
+Toggles (persisted):
+
+P1 needs approval, contains PII needs approval
+
+Redact PII in Jira description
+
+Confidence threshold for auto-execute
+
+Max auto-creates per hour
+
+Strict Mode (Exec-only): require approval for hardware replacements over $500 or cross-site moves.
+
+Mapping rules (demo logic)
+Priority: P1→Highest, P2→High, P3→Medium, P4→Low.
+
+Track: hardware → Jira Component = site; software → Component = “App/Service”.
+
+Jira description always includes Impact, Repro, Key Errors (from log if present), Customer tier, Zendesk link.
+
+Labels: first-action, ai-suggested, GO.
+
+README & 3-minute demo script
+Setup: npm i && npm run dev
+
+Script:
+
+Login Engineer → open ZD-14231 → click Why Hardware? → Create Jira → Evidence Pack.
+
+Login Head → Approvals Inbox approve P1 → Mesh Console shows agent handoffs; open Trace.
+
+Back as Engineer/Dev → upload conveyor-ctrl_2025-08-11.log → chat “analyze this log now” → see Findings in GO-1012.
+
+SpareAgent reserves MD-BRD-V2 → Jira updated with ETA; Zendesk updated.
+
+Login Exec → ROI sliders to show payback; toggle Strict Mode and re-run to show approval gate.
+
+Deliverables
+A single-tenant GreyOrange app with 3 collaborating agents, role-based login, global chat copilot, Agent Mesh Console, Evidence Packs & replay, Approvals & Policies, ROI, seeded data (tickets, issues, logs, inventory), and a polished UI. All logic mocked on the frontend; no external keys. MIT license.
